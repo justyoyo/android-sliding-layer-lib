@@ -23,15 +23,15 @@
 
 package com.slidinglayer;
 
-import java.lang.reflect.Method;
-import java.util.Random;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.VelocityTrackerCompat;
 import android.support.v4.view.ViewConfigurationCompat;
@@ -47,8 +47,13 @@ import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.Scroller;
 
+import java.lang.reflect.Method;
+import java.util.Random;
+
 
 public class SlidingLayer extends FrameLayout {
+
+    private static final String KEY_IS_OPEN = "is_open";
 
     /**
      * Default value for the position of the layer. STICK_TO_AUTO shall inspect the container and choose a stick
@@ -57,20 +62,23 @@ public class SlidingLayer extends FrameLayout {
     public static final int STICK_TO_AUTO = 0;
 
     /**
-     * Special value for the position of the layer. STICK_TO_RIGHT means that the view shall be attached to the
-     * right side of the screen, and come from there into the viewable area.
+     * Special value for the position of the layer. STICK_TO_RIGHT means that
+     * the view shall be attached to the right side of the screen, and come from
+     * there into the viewable area.
      */
     public static final int STICK_TO_RIGHT = -1;
 
     /**
-     * Special value for the position of the layer. STICK_TO_LEFT means that the view shall be attached to the left
-     * side of the screen, and come from there into the viewable area.
+     * Special value for the position of the layer. STICK_TO_LEFT means that the
+     * view shall be attached to the left side of the screen, and come from
+     * there into the viewable area.
      */
     public static final int STICK_TO_LEFT = -2;
 
     /**
-     * Special value for the position of the layer. STICK_TO_MIDDLE means that the view will stay attached trying to
-     * be in the middle of the screen and allowing dismissing both to right and left side.
+     * Special value for the position of the layer. STICK_TO_MIDDLE means that
+     * the view will stay attached trying to be in the middle of the screen and
+     * allowing dismissing both to right and left side.
      */
     public static final int STICK_TO_MIDDLE = -3;
 
@@ -104,8 +112,11 @@ public class SlidingLayer extends FrameLayout {
     protected VelocityTracker mVelocityTracker;
     protected int mMaximumVelocity;
 
-    private Random mRandom;
 
+    protected Bundle mState;
+
+    private Random mRandom;
+    
     private Scroller mScroller;
 
     private int mShadowWidth;
@@ -291,7 +302,8 @@ public class SlidingLayer extends FrameLayout {
     }
 
     /**
-     * Sets the listener to be invoked after a switch change {@link OnInteractListener}.
+     * Sets the listener to be invoked after a switch change
+     * {@link OnInteractListener}.
      * 
      * @param listener
      *            Listener to set
@@ -348,7 +360,8 @@ public class SlidingLayer extends FrameLayout {
     }
 
     /**
-     * Sets a drawable resource that will be used to create the shadow for the layer.
+     * Sets a drawable resource that will be used to create the shadow for the
+     * layer.
      * 
      * @param resId
      *            Resource ID of a drawable
@@ -405,6 +418,32 @@ public class SlidingLayer extends FrameLayout {
 
     public void setSlidingFromShadowEnabled(boolean _slidingShadow) {
         mSlidingFromShadowEnabled = _slidingShadow;
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        SavedState state = new SavedState(superState);
+        if (mState == null)
+            mState = new Bundle();
+        mState.putBoolean(KEY_IS_OPEN, isOpened());
+        state.mState = mState;
+        return state;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        SavedState savedState = (SavedState) state;
+        super.onRestoreInstanceState(savedState.getSuperState());
+        restoreState(savedState.mState);
+    }
+
+    public void restoreState(Parcelable in) {
+        mState = (Bundle) in;
+        boolean isOpened = mState.getBoolean(KEY_IS_OPEN);
+        if (isOpened) {
+            openLayer(false);
+        }
     }
 
     @Override
@@ -866,7 +905,8 @@ public class SlidingLayer extends FrameLayout {
      * @param y
      *            the number of pixels to scroll by on the Y axis
      * @param velocity
-     *            the velocity associated with a fling, if applicable. (0 otherwise)
+     *            the velocity associated with a fling, if applicable. (0
+     *            otherwise)
      */
     void smoothScrollTo(int x, int y, int velocity) {
         if (getChildCount() == 0) {
@@ -912,9 +952,12 @@ public class SlidingLayer extends FrameLayout {
         invalidate();
     }
 
-    // We want the duration of the page snap animation to be influenced by the distance that
-    // the screen has to travel, however, we don't want this duration to be effected in a
-    // purely linear fashion. Instead, we use this method to moderate the effect that the distance
+    // We want the duration of the page snap animation to be influenced by the
+    // distance that
+    // the screen has to travel, however, we don't want this duration to be
+    // effected in a
+    // purely linear fashion. Instead, we use this method to moderate the effect
+    // that the distance
     // of travel has on the overall snap duration.
     float distanceInfluenceForSnapDuration(float f) {
         f -= 0.5f; // center the values about 0.
@@ -1241,9 +1284,8 @@ public class SlidingLayer extends FrameLayout {
                     scrollTo(x, y);
                 }
 
-                // We invalidate a slightly larger area now, this was only optimised for right menu previously
                 // Keep on drawing until the animation has finished. Just re-draw the necessary part
-                invalidate(getLeft() + oldX, getTop() + oldY, getRight() - oldX, getBottom() - oldY);
+                invalidate(getLeft() + oldX, getTop(), getRight(), getBottom());
                 return;
             }
         }
@@ -1282,6 +1324,38 @@ public class SlidingLayer extends FrameLayout {
          */
         public void onClosed();
 
+    }
+
+    static class SavedState extends BaseSavedState {
+
+        Bundle mState;
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        public SavedState(Parcel in) {
+            super(in);
+            mState = in.readBundle();
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+            dest.writeBundle(mState);
+        }
+
+        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
     }
 
 }
