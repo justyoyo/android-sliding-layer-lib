@@ -1,12 +1,12 @@
-buildscript {
-  repositories {
-    mavenCentral()
-  }
-
-  dependencies {
-    classpath 'com.android.tools.build:gradle:0.8.+'
-  }
-}
+// Enabling this breaks the Gradle AndroidBuilder Unknown?
+//buildscript {
+//  repositories {
+//    mavenCentral()
+//  }
+//  dependencies {
+//    classpath 'com.android.tools.build:gradle:0.8.+'
+//  }
+//}
 
 allprojects {
   group = 'com.6wunderkinder.slidinglayerlibrary'
@@ -17,4 +17,4 @@ allprojects {
   }
 }
 
-apply plugin: 'android-reporting'
+//apply plugin: 'android-reporting'

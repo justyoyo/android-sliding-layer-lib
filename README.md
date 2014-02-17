@@ -20,7 +20,7 @@ In the following example the same layout will be added by using the two mentione
 XML
 -----
 ```xml
-<com.slidinglayer.SlidingLayer
+<SlidingLayer
     xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"
     android:id="@+id/slidingLayer1"
     android:layout_width="@dimen/layer_width"
@@ -33,7 +33,7 @@ XML
 
     …
     …
-</com.slidinglayer.SlidingLayer>
+</SlidingLayer>
 ```
 
 Properties:
