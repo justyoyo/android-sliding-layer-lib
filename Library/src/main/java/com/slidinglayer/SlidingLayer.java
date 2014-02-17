@@ -38,7 +38,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.util.AttributeSet;
 import android.util.FloatMath;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -267,8 +266,6 @@ public class SlidingLayer extends FrameLayout {
 
     private void switchLayer(final boolean open, final boolean smoothAnim, final boolean forceSwitch,
                              final int velocityX, final int velocityY) {
-
-        Log.i("SlidingLayer", "SwitchLayer open? " + open);
         if (!forceSwitch && open == mIsOpen) {
             setDrawingCacheEnabled(false);
             return;
