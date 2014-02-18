@@ -270,13 +270,15 @@ public class SlidingLayer extends FrameLayout {
             setDrawingCacheEnabled(false);
             return;
         }
-        if (open) {
-            if (mOnInteractListener != null) {
-                mOnInteractListener.onOpen();
-            }
-        } else {
-            if (mOnInteractListener != null) {
-                mOnInteractListener.onClose();
+        if (open != mIsOpen) {
+            if (open) {
+                if (mOnInteractListener != null) {
+                    mOnInteractListener.onOpen();
+                }
+            } else {
+                if (mOnInteractListener != null) {
+                    mOnInteractListener.onClose();
+                }
             }
         }
 
